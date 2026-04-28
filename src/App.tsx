@@ -90,7 +90,8 @@ export default function App() {
     let begin = initialAssets;
     let totalInv = 0, totalProfit = 0, lastEnd = initialAssets, validCount = 0;
 
-    const rows: CalcRow[] = monthlyInputs.map((inp, i) => {
+    const rows: CalcRow[] = [];
+    monthlyInputs.forEach((inp, i) => {
       const inv = inp.investment ?? 0;
       const end = inp.endingAssets;
       if (end !== null) {
@@ -102,9 +103,10 @@ export default function App() {
         totalInv += inv;
         totalProfit += profit;
         lastEnd = end;
-        return { month: i+1, begin: prevBegin, inv: inp.investment, end, profit, rate, hasData: true };
+        rows.push({ month: i+1, begin: prevBegin, inv: inp.investment, end, profit, rate, hasData: true });
+      } else {
+        rows.push({ month: i+1, begin, inv: inp.investment, end: null, profit: null, rate: null, hasData: false });
       }
-      return { month: i+1, begin, inv: inp.investment, end: null, profit: null, rate: null, hasData: false };
     });
 
     const basis = initialAssets + totalInv;
@@ -179,7 +181,15 @@ export default function App() {
                     <td>📅 {MONTH_LABELS[i].split('\n')[0]}<br/>
                       <span className="text-muted" style={{fontSize:'0.65rem'}}>{MONTH_LABELS[i].split('\n')[1]}</span>
                     </td>
-                    <td>{fmt(r.begin)}</td>
+                    <td>
+                      {i === 0 ? (
+                        <input className="table-input" type="text" placeholder="0"
+                          value={initialAssets === 0 ? '' : String(initialAssets)}
+                          onChange={e => setInitialAssets(Number(e.target.value.replace(/,/g,'')))} />
+                      ) : (
+                        fmt(r.begin)
+                      )}
+                    </td>
                     <td>
                       <input className="table-input" type="text" placeholder="-"
                         value={r.inv===null?'':String(r.inv)}
@@ -340,7 +350,8 @@ export default function App() {
                 contentStyle={{background:'#0d0b05',border:'1px solid #d4af37',borderRadius:4}}
                 labelStyle={{color:'#f2c94c'}}
                 itemStyle={{color:'#ede8d8'}}
-                formatter={(v:any)=>[fmtSigned(v),'損益金額']}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                formatter={(v: any) => [fmtSigned(v), '損益金額']}
               />
               <Bar dataKey="profit" radius={[3,3,0,0]}>
                 {chartData.map((e,i)=>(
@@ -370,7 +381,8 @@ export default function App() {
                 contentStyle={{background:'#0d0b05',border:'1px solid #d4af37',borderRadius:4}}
                 labelStyle={{color:'#f2c94c'}}
                 itemStyle={{color:'#4ade80'}}
-                formatter={(v:any)=>[fmt(v),'期末資產']}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                formatter={(v: any) => [fmt(v), '期末資產']}
               />
               <Line type="monotone" dataKey="endAsset" name="期末資產"
                 stroke="#4ade80" strokeWidth={3}
