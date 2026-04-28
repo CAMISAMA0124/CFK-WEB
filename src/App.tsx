@@ -93,9 +93,6 @@ export default function App() {
     setLoans(loans.map(l => l.id === id ? { ...l, [field]: val } : l));
   };
 
-  const loanRate1 = 0.034;
-  const loanRate2 = 0.026;
-
   const setField = (i: number, field: 'investment'|'endingAssets', val: string) => {
     const n = [...monthlyInputs];
     n[i] = { ...n[i], [field]: val==='' ? null : Number(val.replace(/,/g,'')) };
@@ -127,6 +124,8 @@ export default function App() {
 
     const basis = initialAssets + totalInv;
     const totalIncrease = lastEnd - initialAssets;
+    const realReturn = basis > 0 ? totalProfit / basis : 0;
+    const growthRate = initialAssets > 0 ? (lastEnd / initialAssets) - 1 : 0;
     const totalLoan = loans.reduce((s, l) => s + l.amount, 0);
     const periodInterest = (annualInterest / 12) * validCount;
     const capitalCost = basis > 0 ? periodInterest / basis : 0;
