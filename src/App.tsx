@@ -189,7 +189,8 @@ export default function App() {
         <div className="panel">
           <div className="section-header">每月資產變化明細</div>
           <div className="panel-body" style={{padding:'0.5rem'}}>
-            <table className="data-table">
+            <div className="table-responsive">
+              <table className="data-table">
               <thead>
                 <tr>
                   <th>期間</th><th>期初資產</th><th>期間投入</th>
@@ -242,7 +243,8 @@ export default function App() {
                   </td>
                 </tr>
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         </div>
 

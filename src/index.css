@@ -209,8 +209,15 @@ body {
 }
 
 /* ── Monthly Table ── */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .data-table {
   width: 100%;
+  min-width: 500px; /* Ensure columns don't squeeze too much */
   border-collapse: collapse;
   font-size: 0.78rem;
 }
@@ -514,7 +521,7 @@ body {
 }
 .loan-add-btn:hover { background: rgba(210, 175, 55, 0.2); }
 
-@media (max-width: 720px) {
+@media (max-width: 860px) {
   .top-stats { grid-template-columns: repeat(3, 1fr); }
   .stat-box { border-bottom: 1px solid var(--gold-border); }
   .middle-grid { grid-template-columns: 1fr; }
