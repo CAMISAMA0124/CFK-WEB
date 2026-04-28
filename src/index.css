@@ -38,12 +38,13 @@ body {
   color: var(--text);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  padding: 1.5rem 1rem 3rem;
+  padding: 1rem 0.75rem 2rem;
+  font-size: 15px; /* Base font size reduction */
 }
 
 /* ── App Container ── */
 .app-container {
-  max-width: 860px;
+  max-width: 800px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -138,7 +139,7 @@ body {
 }
 
 .panel-body {
-  padding: 1rem;
+  padding: 0.75rem;
 }
 
 .section-header {
@@ -227,7 +228,7 @@ body {
   width: 100%;
   min-width: 500px; /* Ensure columns don't squeeze too much */
   border-collapse: collapse;
-  font-size: 0.78rem;
+  font-size: 0.72rem; /* Shrink table text */
 }
 
 .data-table th {
@@ -306,7 +307,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.2rem;
-  padding: 0.75rem 0.4rem;
+  padding: 0.6rem 0.35rem;
   border-bottom: 1px solid rgba(210,175,55,0.15);
   border-right: 1px solid rgba(210,175,55,0.15);
   text-align: center;
