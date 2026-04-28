@@ -316,6 +316,13 @@ body {
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.highlight-subval {
+  margin-top: 0.1rem;
 }
 
 .highlight-icon-img {
@@ -388,7 +395,7 @@ body {
 ═══════════════════════════════ */
 .leverage-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr 1.1fr 1.2fr;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
   gap: 0;
 }
 

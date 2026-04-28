@@ -253,7 +253,8 @@ export default function App() {
             <div className="highlights-inner">
               {[
                 { icon: IC.shield, label:'年初資產',     val: fmt(initialAssets),           vcls:'text-gold' },
-                { icon: IC.growth, label:'總資產增加',   val: fmtSigned(calc.totalIncrease), vcls:'text-positive' },
+                { icon: IC.growth, label:'總資產增加',   val: fmtSigned(calc.totalIncrease), vcls:'text-positive',
+                  subVal: `(${fmtPct(calc.growthRate)})` },
                 { icon: IC.bag,    label:'今年投入資金', val: fmt(calc.totalInv),            vcls:'text-gold' },
                 { icon: IC.coins,  label:'真實投資獲利', val: fmtSigned(calc.totalProfit),   vcls:'text-positive' },
                 { icon: IC.shield, label:'投資基礎本金', val: fmt(calc.basis),               vcls:'text-gold' },
@@ -262,7 +263,10 @@ export default function App() {
                 <div className="highlight-item" key={i}>
                   <img className="highlight-icon-top" src={h.icon} alt={h.label} />
                   <div className="highlight-label">{h.label}</div>
-                  <div className={`highlight-val ${h.vcls}`}>{h.val}</div>
+                  <div className={`highlight-val ${h.vcls}`}>
+                    {h.val}
+                    {h.subVal && <div className="highlight-subval" style={{fontSize:'0.8rem'}}>{h.subVal}</div>}
+                  </div>
                 </div>
               ))}
             </div>
@@ -277,10 +281,10 @@ export default function App() {
               </div>
             </div>
             <div className="return-box">
-              <div className="return-title">資產總成長</div>
+              <div className="return-title">淨報酬率</div>
               <div className="return-sub">(年初至今)</div>
-              <div className={`return-val ${calc.growthRate>=0?'text-positive':'text-negative'}`}>
-                {fmtPct(calc.growthRate)}
+              <div className={`return-val ${calc.netReturn>=0?'text-positive':'text-negative'}`}>
+                {fmtPct(calc.netReturn)}
               </div>
             </div>
           </div>
@@ -338,17 +342,6 @@ export default function App() {
                 = {Math.round(calc.periodInterest)} ÷ {fmt(calc.basis)}
               </div>
               <img src={IC.percent} alt="percent" style={{width:46,height:46,marginTop:'0.25rem'}}/>
-            </div>
-
-            <div className="leverage-cell">
-              <div className="leverage-label">淨報酬率 (含利息)</div>
-              <div className="leverage-sublabel">(投資報酬率－資金成本率)</div>
-              <div className={`leverage-val ${calc.netReturn>=0?'text-positive':'text-negative'}`} style={{fontSize:'1.4rem'}}>
-                {(calc.netReturn*100).toFixed(2)}%
-              </div>
-              <div className="leverage-detail">
-                = {(calc.realReturn*100).toFixed(2)}% ~ {(calc.capitalCost*100).toFixed(2)}%
-              </div>
             </div>
 
             <div className="leverage-cell">
