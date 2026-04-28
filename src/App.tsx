@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
   ResponsiveContainer, Cell,
@@ -54,19 +54,31 @@ const IC = {
 };
 
 export default function App() {
-  const [year, setYear] = useState(2026);
-  const [initialAssets, setInitialAssets] = useState(0);
-  const [loanAmount, setLoanAmount] = useState(0);
-  const [annualInterest, setAnnualInterest] = useState(0);
-  const loanRate1 = 0.034;
-  const loanRate2 = 0.026;
-
-  const [monthlyInputs, setMonthlyInputs] = useState<MonthlyInput[]>(() =>
-    Array(12).fill(null).map(() => ({
+  const [year, setYear] = useState(() => Number(localStorage.getItem('cfk_year')) || 2026);
+  const [initialAssets, setInitialAssets] = useState(() => Number(localStorage.getItem('cfk_initialAssets')) || 0);
+  const [loanAmount, setLoanAmount] = useState(() => Number(localStorage.getItem('cfk_loanAmount')) || 0);
+  const [annualInterest, setAnnualInterest] = useState(() => Number(localStorage.getItem('cfk_annualInterest')) || 0);
+  
+  const [monthlyInputs, setMonthlyInputs] = useState<MonthlyInput[]>(() => {
+    const saved = localStorage.getItem('cfk_monthlyInputs');
+    if (saved) return JSON.parse(saved);
+    return Array(12).fill(null).map(() => ({
       investment: null,
       endingAssets: null,
-    }))
-  );
+    }));
+  });
+
+  // Persistence logic
+  useEffect(() => {
+    localStorage.setItem('cfk_year', String(year));
+    localStorage.setItem('cfk_initialAssets', String(initialAssets));
+    localStorage.setItem('cfk_loanAmount', String(loanAmount));
+    localStorage.setItem('cfk_annualInterest', String(annualInterest));
+    localStorage.setItem('cfk_monthlyInputs', JSON.stringify(monthlyInputs));
+  }, [year, initialAssets, loanAmount, annualInterest, monthlyInputs]);
+
+  const loanRate1 = 0.034;
+  const loanRate2 = 0.026;
 
   const setField = (i: number, field: 'investment'|'endingAssets', val: string) => {
     const n = [...monthlyInputs];
