@@ -467,11 +467,51 @@ body {
 /* ═══════════════════════════════
    RESPONSIVE
 ═══════════════════════════════ */
+/* ── Loan List ── */
+.loan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: 0.4rem;
+}
+.loan-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
+}
+.loan-idx { font-size: 0.65rem; color: var(--muted); width: 2ch; }
+.loan-input-amount { text-align: left; padding-left: 4px; }
+.loan-input-rate { text-align: center; color: var(--positive); }
+.loan-btn {
+  background: transparent;
+  border: none;
+  color: var(--negative);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0 4px;
+  line-height: 1;
+}
+.loan-add-btn {
+  background: rgba(210, 175, 55, 0.1);
+  border: 1px dashed var(--gold-border);
+  color: var(--gold);
+  font-size: 0.72rem;
+  padding: 0.3rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.loan-add-btn:hover { background: rgba(210, 175, 55, 0.2); }
+
 @media (max-width: 720px) {
   .top-stats { grid-template-columns: repeat(3, 1fr); }
   .stat-box { border-bottom: 1px solid var(--gold-border); }
   .middle-grid { grid-template-columns: 1fr; }
-  .leverage-grid { grid-template-columns: 1fr 1fr; row-gap: 0.5rem; }
-  .leverage-cell { border-bottom: 1px solid var(--gold-border); }
+  .leverage-grid { display: flex; flex-direction: column; }
+  .leverage-cell { border-bottom: 1px solid var(--gold-border); border-right: none; }
   .return-grid { grid-template-columns: 1fr 1fr; }
 }

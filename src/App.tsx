@@ -28,6 +28,12 @@ interface MonthlyInput {
   endingAssets: number | null;
 }
 
+interface LoanItem {
+  id: string;
+  amount: number;
+  rate: number;
+}
+
 interface CalcRow {
   month: number;
   begin: number;
@@ -56,7 +62,11 @@ const IC = {
 export default function App() {
   const [year, setYear] = useState(() => Number(localStorage.getItem('cfk_year')) || 2026);
   const [initialAssets, setInitialAssets] = useState(() => Number(localStorage.getItem('cfk_initialAssets')) || 0);
-  const [loanAmount, setLoanAmount] = useState(() => Number(localStorage.getItem('cfk_loanAmount')) || 0);
+  const [loans, setLoans] = useState<LoanItem[]>(() => {
+    const saved = localStorage.getItem('cfk_loans');
+    if (saved) return JSON.parse(saved);
+    return [{ id: '1', amount: 0, rate: 3.4 }, { id: '2', amount: 0, rate: 2.6 }];
+  });
   const [annualInterest, setAnnualInterest] = useState(() => Number(localStorage.getItem('cfk_annualInterest')) || 0);
   
   const [monthlyInputs, setMonthlyInputs] = useState<MonthlyInput[]>(() => {
@@ -72,10 +82,16 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('cfk_year', String(year));
     localStorage.setItem('cfk_initialAssets', String(initialAssets));
-    localStorage.setItem('cfk_loanAmount', String(loanAmount));
+    localStorage.setItem('cfk_loans', JSON.stringify(loans));
     localStorage.setItem('cfk_annualInterest', String(annualInterest));
     localStorage.setItem('cfk_monthlyInputs', JSON.stringify(monthlyInputs));
-  }, [year, initialAssets, loanAmount, annualInterest, monthlyInputs]);
+  }, [year, initialAssets, loans, annualInterest, monthlyInputs]);
+
+  const addLoan = () => setLoans([...loans, { id: Date.now().toString(), amount: 0, rate: 2.0 }]);
+  const removeLoan = (id: string) => setLoans(loans.filter(l => l.id !== id));
+  const updateLoan = (id: string, field: 'amount'|'rate', val: number) => {
+    setLoans(loans.map(l => l.id === id ? { ...l, [field]: val } : l));
+  };
 
   const loanRate1 = 0.034;
   const loanRate2 = 0.026;
@@ -111,16 +127,19 @@ export default function App() {
 
     const basis = initialAssets + totalInv;
     const totalIncrease = lastEnd - initialAssets;
-    const realReturn = basis > 0 ? totalProfit / basis : 0;
-    const growthRate = initialAssets > 0 ? (lastEnd / initialAssets) - 1 : 0;
-    const totalLoan = loanAmount;
+    const totalLoan = loans.reduce((s, l) => s + l.amount, 0);
     const periodInterest = (annualInterest / 12) * validCount;
     const capitalCost = basis > 0 ? periodInterest / basis : 0;
     const netReturn = realReturn - capitalCost;
 
+    const contributions = loans.map(l => ({
+      rate: l.rate,
+      val: realReturn - (l.rate / 100)
+    }));
+
     return { rows, totalInv, basis, totalProfit, lastEnd, totalIncrease, realReturn, growthRate,
-             totalLoan, periodInterest, capitalCost, netReturn, validCount };
-  }, [initialAssets, monthlyInputs, loanAmount, annualInterest]);
+             totalLoan, periodInterest, capitalCost, netReturn, validCount, contributions };
+  }, [initialAssets, monthlyInputs, loans, annualInterest]);
 
   const chartData = calc.rows.map(r => ({ name: `${r.month}月`, profit: r.profit, endAsset: r.end }));
 
@@ -273,14 +292,27 @@ export default function App() {
         </div>
         <div className="panel-body" style={{padding:'0.5rem 0'}}>
           <div className="leverage-grid">
-            <div className="leverage-cell">
-              <div className="leverage-label">貸款總額</div>
-              <div className="leverage-val text-gold">
-                <input className="inline-input" style={{width:'120px', fontSize:'1.4rem', fontWeight:700}}
-                  value={loanAmount} onChange={e=>setLoanAmount(+e.target.value.replace(/,/g,''))} /> 元
+            <div className="leverage-cell" style={{flex: 1.5, minWidth: '220px'}}>
+              <div className="leverage-label">貸款清單</div>
+              <div className="loan-list">
+                {loans.map((l, idx) => (
+                  <div key={l.id} className="loan-row">
+                    <span className="loan-idx">#{idx+1}</span>
+                    <input className="inline-input loan-input-amount" style={{width:'80px'}}
+                      value={l.amount === 0 ? '' : l.amount}
+                      placeholder="金額"
+                      onChange={e => updateLoan(l.id, 'amount', Number(e.target.value.replace(/,/g,'')))} />
+                    <input className="inline-input loan-input-rate" style={{width:'50px'}}
+                      value={l.rate === 0 ? '' : l.rate}
+                      placeholder="利率%"
+                      onChange={e => updateLoan(l.id, 'rate', Number(e.target.value))} />
+                    <span style={{fontSize:'0.7rem', color:'var(--gold-dim)'}}>%</span>
+                    <button className="loan-btn" onClick={() => removeLoan(l.id)}>×</button>
+                  </div>
+                ))}
+                <button className="loan-add-btn" onClick={addLoan}>+ 新增貸款</button>
               </div>
-              <div className="leverage-sublabel">(信貸及各類融資總計)</div>
-              <img className="stat-icon" src={IC.coins} alt="coins" style={{width:54,height:54,marginTop:'0.2rem'}}/>
+              <div className="leverage-sublabel" style={{marginTop:'0.4rem'}}>總額: <span className="text-gold">{fmt(calc.totalLoan)}</span> 元</div>
             </div>
 
             <div className="leverage-cell">
@@ -319,14 +351,22 @@ export default function App() {
 
             <div className="leverage-cell">
               <div className="leverage-label">槓桿貢獻</div>
-              <div className="leverage-sublabel">(對比貸款利率區間)</div>
-              <div className="leverage-val text-positive" style={{fontSize:'1rem',lineHeight:1.4}}>
-                +{((calc.realReturn-loanRate1)*100).toFixed(2)}% ~<br/>
-                +{((calc.realReturn-loanRate2)*100).toFixed(2)}%
+              <div className="leverage-sublabel">(對比各筆貸款利率)</div>
+              <div className="leverage-val text-positive" style={{fontSize:'0.9rem', lineHeight:1.4, marginTop:'0.2rem'}}>
+                {calc.contributions.length > 0 ? (
+                  calc.contributions.map((c, i) => (
+                    <div key={i} style={{marginBottom:'0.1rem'}}>
+                      {(c.val * 100).toFixed(2)}%
+                    </div>
+                  ))
+                ) : '0.00%'}
               </div>
-              <div className="leverage-detail">
-                對比 {(loanRate1*100).toFixed(2)}%：+{((calc.realReturn-loanRate1)*100).toFixed(2)}%<br/>
-                對比 {(loanRate2*100).toFixed(2)}%：+{((calc.realReturn-loanRate2)*100).toFixed(2)}%
+              <div className="leverage-detail" style={{textAlign:'left', width:'100%', paddingLeft:'0.5rem'}}>
+                {calc.contributions.map((c, i) => (
+                  <div key={i}>
+                    對比 {c.rate.toFixed(2)}% : <span className={c.val>=0?'text-positive':'text-negative'}>{c.val>=0?'+':''}{(c.val*100).toFixed(2)}%</span>
+                  </div>
+                ))}
               </div>
               <img src={IC.star} alt="star" style={{width:48,height:48,marginTop:'0.25rem'}}/>
             </div>
