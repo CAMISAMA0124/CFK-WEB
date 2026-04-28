@@ -31,7 +31,7 @@ interface MonthlyInput {
 interface LoanItem {
   id: string;
   amount: number;
-  rate: number;
+  rate: string;
 }
 
 interface CalcRow {
@@ -65,7 +65,7 @@ export default function App() {
   const [loans, setLoans] = useState<LoanItem[]>(() => {
     const saved = localStorage.getItem('cfk_loans');
     if (saved) return JSON.parse(saved);
-    return [{ id: '1', amount: 0, rate: 3.4 }, { id: '2', amount: 0, rate: 2.6 }];
+    return [{ id: '1', amount: 0, rate: '3.4' }, { id: '2', amount: 0, rate: '2.6' }];
   });
   const [annualInterest, setAnnualInterest] = useState(() => Number(localStorage.getItem('cfk_annualInterest')) || 0);
   
@@ -87,9 +87,9 @@ export default function App() {
     localStorage.setItem('cfk_monthlyInputs', JSON.stringify(monthlyInputs));
   }, [year, initialAssets, loans, annualInterest, monthlyInputs]);
 
-  const addLoan = () => setLoans([...loans, { id: Date.now().toString(), amount: 0, rate: 2.0 }]);
+  const addLoan = () => setLoans([...loans, { id: Date.now().toString(), amount: 0, rate: '2.0' }]);
   const removeLoan = (id: string) => setLoans(loans.filter(l => l.id !== id));
-  const updateLoan = (id: string, field: 'amount'|'rate', val: number) => {
+  const updateLoan = (id: string, field: 'amount'|'rate', val: any) => {
     setLoans(loans.map(l => l.id === id ? { ...l, [field]: val } : l));
   };
 
@@ -131,10 +131,13 @@ export default function App() {
     const capitalCost = basis > 0 ? periodInterest / basis : 0;
     const netReturn = realReturn - capitalCost;
 
-    const contributions = loans.map(l => ({
-      rate: l.rate,
-      val: realReturn - (l.rate / 100)
-    }));
+    const contributions = loans.map(l => {
+      const r = parseFloat(l.rate) || 0;
+      return {
+        rate: r,
+        val: realReturn - (r / 100)
+      };
+    });
 
     return { rows, totalInv, basis, totalProfit, lastEnd, totalIncrease, realReturn, growthRate,
              totalLoan, periodInterest, capitalCost, netReturn, validCount, contributions };
@@ -302,9 +305,9 @@ export default function App() {
                       placeholder="金額"
                       onChange={e => updateLoan(l.id, 'amount', Number(e.target.value.replace(/,/g,'')))} />
                     <input className="inline-input loan-input-rate" style={{width:'50px'}}
-                      value={l.rate === 0 ? '' : l.rate}
+                      value={l.rate}
                       placeholder="利率%"
-                      onChange={e => updateLoan(l.id, 'rate', Number(e.target.value))} />
+                      onChange={e => updateLoan(l.id, 'rate', e.target.value)} />
                     <span style={{fontSize:'0.7rem', color:'var(--gold-dim)'}}>%</span>
                     <button className="loan-btn" onClick={() => removeLoan(l.id)}>×</button>
                   </div>
