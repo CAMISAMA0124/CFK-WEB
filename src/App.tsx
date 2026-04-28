@@ -67,7 +67,6 @@ export default function App() {
     if (saved) return JSON.parse(saved);
     return [{ id: '1', amount: 0, rate: '3.4' }, { id: '2', amount: 0, rate: '2.6' }];
   });
-  const [annualInterest, setAnnualInterest] = useState(() => Number(localStorage.getItem('cfk_annualInterest')) || 0);
   
   const [monthlyInputs, setMonthlyInputs] = useState<MonthlyInput[]>(() => {
     const saved = localStorage.getItem('cfk_monthlyInputs');
@@ -83,9 +82,8 @@ export default function App() {
     localStorage.setItem('cfk_year', String(year));
     localStorage.setItem('cfk_initialAssets', String(initialAssets));
     localStorage.setItem('cfk_loans', JSON.stringify(loans));
-    localStorage.setItem('cfk_annualInterest', String(annualInterest));
     localStorage.setItem('cfk_monthlyInputs', JSON.stringify(monthlyInputs));
-  }, [year, initialAssets, loans, annualInterest, monthlyInputs]);
+  }, [year, initialAssets, loans, monthlyInputs]);
 
   const addLoan = () => setLoans([...loans, { id: Date.now().toString(), amount: 0, rate: '2.0' }]);
   const removeLoan = (id: string) => setLoans(loans.filter(l => l.id !== id));
@@ -127,6 +125,7 @@ export default function App() {
     const realReturn = basis > 0 ? totalProfit / basis : 0;
     const growthRate = initialAssets > 0 ? (lastEnd / initialAssets) - 1 : 0;
     const totalLoan = loans.reduce((s, l) => s + l.amount, 0);
+    const annualInterest = loans.reduce((s, l) => s + (l.amount * (parseFloat(l.rate)||0) / 100), 0);
     const periodInterest = (annualInterest / 12) * validCount;
     const capitalCost = basis > 0 ? periodInterest / basis : 0;
     const netReturn = realReturn - capitalCost;
@@ -140,8 +139,8 @@ export default function App() {
     });
 
     return { rows, totalInv, basis, totalProfit, lastEnd, totalIncrease, realReturn, growthRate,
-             totalLoan, periodInterest, capitalCost, netReturn, validCount, contributions };
-  }, [initialAssets, monthlyInputs, loans, annualInterest]);
+             totalLoan, annualInterest, periodInterest, capitalCost, netReturn, validCount, contributions };
+  }, [initialAssets, monthlyInputs, loans]);
 
   const chartData = calc.rows.map(r => ({ name: `${r.month}月`, profit: r.profit, endAsset: r.end }));
 
@@ -319,12 +318,10 @@ export default function App() {
 
             <div className="leverage-cell">
               <div className="leverage-label">平均年利息</div>
-              <div className="leverage-val text-gold">
-                約 <input className="inline-input" style={{width:'85px', fontSize:'1.4rem', fontWeight:700}}
-                  value={annualInterest}
-                  onChange={e=>setAnnualInterest(+e.target.value.replace(/,/g,''))} /> 元
+              <div className="leverage-val text-gold" style={{fontSize:'1.4rem', fontWeight:700}}>
+                約 {fmt(calc.annualInterest)} 元
               </div>
-              <div className="leverage-sublabel">(依本息平均攤還)</div>
+              <div className="leverage-sublabel">(依貸款清單自動計算)</div>
               <img src={IC.calc} alt="calculator" style={{width:48,height:48,marginTop:'0.25rem'}}/>
             </div>
 
