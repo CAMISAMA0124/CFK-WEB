@@ -122,12 +122,7 @@ export default function App() {
              totalLoan, periodInterest, capitalCost, netReturn, validCount };
   }, [initialAssets, monthlyInputs, loanAmount, annualInterest]);
 
-  const chartData = useMemo(() => 
-    calc.rows
-      .filter(r => r.end !== null)
-      .map(r => ({ name: `${r.month}月`, profit: r.profit, endAsset: r.end })),
-    [calc.rows]
-  );
+  const chartData = calc.rows.map(r => ({ name: `${r.month}月`, profit: r.profit, endAsset: r.end }));
 
   return (
     <div className="app-container">
@@ -181,45 +176,38 @@ export default function App() {
                 </tr>
               </thead>
               <tbody>
-                {calc.rows.filter((r, i) => {
-                  if (i === 0) return true;
-                  // Show if previous month has an end value, or if this month has any data
-                  return calc.rows[i-1].end !== null || r.end !== null || (r.inv !== null && r.inv !== 0);
-                }).map((r) => {
-                  const i = r.month - 1;
-                  return (
-                    <tr key={r.month}>
-                      <td>📅 {MONTH_LABELS[i].split('\n')[0]}<br/>
-                        <span className="text-muted" style={{fontSize:'0.65rem'}}>{MONTH_LABELS[i].split('\n')[1]}</span>
-                      </td>
-                      <td>
-                        {i === 0 ? (
-                          <input className="table-input" type="text" placeholder="0"
-                            value={initialAssets === 0 ? '' : String(initialAssets)}
-                            onChange={e => setInitialAssets(Number(e.target.value.replace(/,/g,'')))} />
-                        ) : (
-                          fmt(r.begin)
-                        )}
-                      </td>
-                      <td>
-                        <input className="table-input" type="text" placeholder="-"
-                          value={r.inv===null?'':String(r.inv)}
-                          onChange={e=>setField(i,'investment',e.target.value)} />
-                      </td>
-                      <td>
-                        <input className="table-input" type="text" placeholder="-"
-                          value={r.end===null?'':String(r.end)}
-                          onChange={e=>setField(i,'endingAssets',e.target.value)} />
-                      </td>
-                      <td className={r.profit!==null?(r.profit>=0?'text-positive':'text-negative'):''}>
-                        {fmtSigned(r.profit)}
-                      </td>
-                      <td className={r.rate!==null?(r.rate>=0?'text-positive':'text-negative'):''}>
-                        {fmtPct(r.rate)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {calc.rows.map((r, i) => (
+                  <tr key={r.month}>
+                    <td>📅 {MONTH_LABELS[i].split('\n')[0]}<br/>
+                      <span className="text-muted" style={{fontSize:'0.65rem'}}>{MONTH_LABELS[i].split('\n')[1]}</span>
+                    </td>
+                    <td>
+                      {i === 0 ? (
+                        <input className="table-input" type="text" placeholder="0"
+                          value={initialAssets === 0 ? '' : String(initialAssets)}
+                          onChange={e => setInitialAssets(Number(e.target.value.replace(/,/g,'')))} />
+                      ) : (
+                        (i > 0 && calc.rows[i-1].end === null) ? '' : fmt(r.begin)
+                      )}
+                    </td>
+                    <td>
+                      <input className="table-input" type="text" placeholder="-"
+                        value={r.inv===null?'':String(r.inv)}
+                        onChange={e=>setField(i,'investment',e.target.value)} />
+                    </td>
+                    <td>
+                      <input className="table-input" type="text" placeholder="-"
+                        value={r.end===null?'':String(r.end)}
+                        onChange={e=>setField(i,'endingAssets',e.target.value)} />
+                    </td>
+                    <td className={r.profit!==null?(r.profit>=0?'text-positive':'text-negative'):''}>
+                      {fmtSigned(r.profit)}
+                    </td>
+                    <td className={r.rate!==null?(r.rate>=0?'text-positive':'text-negative'):''}>
+                      {fmtPct(r.rate)}
+                    </td>
+                  </tr>
+                ))}
                 <tr className="total-row">
                   <td>總 計<br/><span style={{fontSize:'0.65rem',color:'var(--muted)'}}>1/1~12/31</span></td>
                   <td>{fmt(initialAssets)}<br/><span style={{fontSize:'0.65rem',color:'var(--muted)'}}>(年初)</span></td>
