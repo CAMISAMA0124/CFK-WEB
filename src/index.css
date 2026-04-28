@@ -228,13 +228,13 @@ body {
 .data-table td {
   border: 1px solid rgba(210, 175, 55, 0.18);
   padding: 0.35rem 0.4rem;
-  text-align: right;
+  text-align: center;
   background: var(--cell-bg);
   font-size: 0.75rem;
 }
 
 .data-table td:first-child {
-  text-align: left;
+  text-align: center;
   color: var(--gold-dim);
   font-size: 0.72rem;
   white-space: nowrap;
@@ -254,7 +254,7 @@ body {
   border: none;
   color: inherit;
   width: 100%;
-  text-align: right;
+  text-align: center;
   font: inherit;
   outline: none;
 }
