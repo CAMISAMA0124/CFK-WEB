@@ -196,6 +196,14 @@ body {
   object-fit: contain;
   margin-top: 0.25rem;
   filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));
+  transition: width 0.3s;
+}
+
+@media (max-width: 1024px) {
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 /* ═══════════════════════════════
@@ -522,9 +530,9 @@ body {
 }
 .loan-add-btn:hover { background: rgba(210, 175, 55, 0.2); }
 
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .top-stats { grid-template-columns: repeat(3, 1fr); }
-  .stat-box { border-bottom: 1px solid var(--gold-border); }
+  .stat-box { border-bottom: 1px solid var(--gold-border); padding: 0.5rem; }
   .middle-grid { grid-template-columns: 1fr; }
   .leverage-grid { display: flex; flex-direction: column; }
   .leverage-cell { border-bottom: 1px solid var(--gold-border); border-right: none; }
