@@ -40,16 +40,16 @@ const IC = {
 
 export default function App() {
   const [year, setYear] = useState(2026);
-  const [initialAssets, setInitialAssets] = useState(5552541);
-  const [loanAmount, setLoanAmount] = useState(1910000);
-  const [annualInterest, setAnnualInterest] = useState(30700);
+  const [initialAssets, setInitialAssets] = useState(0);
+  const [loanAmount, setLoanAmount] = useState(0);
+  const [annualInterest, setAnnualInterest] = useState(0);
   const loanRate1 = 0.034;
   const loanRate2 = 0.026;
 
   const [monthlyInputs, setMonthlyInputs] = useState(() =>
-    Array(12).fill(null).map((_, i) => ({
-      investment: i===0?114072:i===1?166533:i===2?148779:i===3?195875:null,
-      endingAssets: i===0?6068694:i===1?6552703:i===2?5886784:i===3?7369937:null,
+    Array(12).fill(null).map(() => ({
+      investment: null,
+      endingAssets: null,
     }))
   );
 
