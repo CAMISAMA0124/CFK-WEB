@@ -23,6 +23,21 @@ const MONTH_LABELS = ['1月\n1/1~1/31','2月\n2/1~2/28','3月\n3/1~3/31','4月\n
   '5月\n5/1~5/31','6月\n6/1~6/30','7月\n7/1~7/31','8月\n8/1~8/31',
   '9月\n9/1~9/30','10月\n10/1~10/31','11月\n11/1~11/30','12月\n12/1~12/31'];
 
+interface MonthlyInput {
+  investment: number | null;
+  endingAssets: number | null;
+}
+
+interface CalcRow {
+  month: number;
+  begin: number;
+  inv: number | null;
+  end: number | null;
+  profit: number | null;
+  rate: number | null;
+  hasData: boolean;
+}
+
 // Top-6 stat icons (user-provided sprite cuts)
 const IC = {
   cash:    '/ic_cash.png',    // 年初資產 / 期末資產
@@ -46,7 +61,7 @@ export default function App() {
   const loanRate1 = 0.034;
   const loanRate2 = 0.026;
 
-  const [monthlyInputs, setMonthlyInputs] = useState(() =>
+  const [monthlyInputs, setMonthlyInputs] = useState<MonthlyInput[]>(() =>
     Array(12).fill(null).map(() => ({
       investment: null,
       endingAssets: null,
@@ -63,7 +78,7 @@ export default function App() {
     let begin = initialAssets;
     let totalInv = 0, totalProfit = 0, lastEnd = initialAssets, validCount = 0;
 
-    const rows = monthlyInputs.map((inp, i) => {
+    const rows: CalcRow[] = monthlyInputs.map((inp, i) => {
       const inv = inp.investment ?? 0;
       const end = inp.endingAssets;
       if (end !== null) {
@@ -75,7 +90,7 @@ export default function App() {
         totalInv += inv;
         totalProfit += profit;
         lastEnd = end;
-        return { month: i+1, begin: prevBegin, inv, end, profit, rate, hasData: true };
+        return { month: i+1, begin: prevBegin, inv: inp.investment, end, profit, rate, hasData: true };
       }
       return { month: i+1, begin, inv: inp.investment, end: null, profit: null, rate: null, hasData: false };
     });
