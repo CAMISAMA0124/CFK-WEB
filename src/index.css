@@ -531,11 +531,5 @@ body {
 }
 .loan-add-btn:hover { background: rgba(210, 175, 55, 0.2); }
 
-@media (max-width: 1024px) {
-  .top-stats { grid-template-columns: repeat(3, 1fr); }
-  .stat-box { border-bottom: 1px solid var(--gold-border); padding: 0.5rem; }
-  .middle-grid { grid-template-columns: 1fr; }
-  .leverage-grid { display: flex; flex-direction: column; }
-  .leverage-cell { border-bottom: 1px solid var(--gold-border); border-right: none; }
-  .return-grid { grid-template-columns: 1fr 1fr; }
-}
+/* ── Removed responsive stacking as per user request to keep layout fixed ── */
+/* @media (max-width: 1024px) { ... } */
