@@ -230,15 +230,15 @@ export default function App() {
                   </tr>
                 ))}
                 <tr className="total-row">
-                  <td>總 計 <span style={{fontSize:'0.65rem',color:'var(--muted)'}}>(1/1~12/31)</span></td>
-                  <td>{fmt(initialAssets)} <span style={{fontSize:'0.65rem',color:'var(--muted)'}}>(年初資產)</span></td>
-                  <td>{fmt(calc.totalInv)} <span style={{fontSize:'0.65rem',color:'var(--muted)'}}>(今年投入)</span></td>
-                  <td>{fmt(calc.lastEnd)} <span style={{fontSize:'0.65rem',color:'var(--muted)'}}>(期末資產)</span></td>
+                  <td>總 計 <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(1/1~12/31)</span></td>
+                  <td>{fmt(initialAssets)} <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(年初資產)</span></td>
+                  <td>{fmt(calc.totalInv)} <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(今年投入)</span></td>
+                  <td>{fmt(calc.lastEnd)} <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(期末資產)</span></td>
                   <td className={calc.totalProfit>=0?'text-positive':'text-negative'}>
-                    {fmtSigned(calc.totalProfit)} <span style={{fontSize:'0.65rem',color:'var(--muted)'}}>(真實投資獲利)</span>
+                    {fmtSigned(calc.totalProfit)} <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(真實投資獲利)</span>
                   </td>
                   <td className={calc.realReturn>=0?'text-positive':'text-negative'}>
-                    {fmtPct(calc.realReturn)} <span style={{fontSize:'0.65rem',color:'var(--muted)'}}>(真實報酬率)</span>
+                    {fmtPct(calc.realReturn)} <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(真實報酬率)</span>
                   </td>
                 </tr>
               </tbody>
