@@ -95,6 +95,59 @@ export default function App() {
     localStorage.setItem('cfk_monthlyInputs', JSON.stringify(monthlyInputs));
   }, [year, initialAssets, loans, annualInterest, monthlyInputs]);
 
+  const [isBackingUp, setIsBackingUp] = useState(false);
+  const [backupCode, setBackupCode] = useState<string | null>(null);
+  const [restoreCodeInput, setRestoreCodeInput] = useState('');
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreMessage, setRestoreMessage] = useState('');
+
+  const handleBackup = async () => {
+    setIsBackingUp(true);
+    try {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const payload = { year, initialAssets, loans, annualInterest, monthlyInputs };
+      const res = await fetch(`https://kvdb.io/64YQm3RDnTFyWuLV7hJreQ/${code}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) setBackupCode(code);
+      else alert('雲端備份失敗，請稍後再試。');
+    } catch (err) {
+      alert('網路發生錯誤，無法連線至備份伺服器。');
+    }
+    setIsBackingUp(false);
+  };
+
+  const handleRestore = async () => {
+    if (restoreCodeInput.length !== 6) return;
+    setIsRestoring(true);
+    setRestoreMessage('');
+    try {
+      const res = await fetch(`https://kvdb.io/64YQm3RDnTFyWuLV7hJreQ/${restoreCodeInput}`);
+      if (res.status === 404) {
+        setRestoreMessage('❌ 找不到此代碼的資料，或代碼已過期。');
+      } else if (res.ok) {
+        const data = await res.json();
+        if (data && data.year) {
+          setYear(data.year);
+          setInitialAssets(data.initialAssets ?? 0);
+          setLoans(data.loans ?? []);
+          setAnnualInterest(data.annualInterest ?? 0);
+          setMonthlyInputs(data.monthlyInputs ?? []);
+          setRestoreMessage('✅ 資料載入成功！');
+          setRestoreCodeInput('');
+        } else {
+          setRestoreMessage('❌ 資料格式錯誤。');
+        }
+      } else {
+        setRestoreMessage('❌ 雲端伺服器錯誤，請稍後再試。');
+      }
+    } catch (err) {
+      setRestoreMessage('❌ 網路發生錯誤。');
+    }
+    setIsRestoring(false);
+  };
+
   const addLoan = () => setLoans([...loans, { id: Date.now().toString(), amount: 0, rate: '2.0' }]);
   const removeLoan = (id: string) => setLoans(loans.filter(l => l.id !== id));
   const updateLoan = (id: string, field: 'amount'|'rate', val: any) => {
@@ -442,6 +495,69 @@ export default function App() {
                 activeDot={{r:7}} connectNulls={false} />
             </LineChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* ── DATA BACKUP & RESTORE ── */}
+      <div className="panel" style={{ borderColor: 'rgba(50,150,250,0.6)' }}>
+        <div className="section-header" style={{ borderColor: 'rgba(50,150,250,0.4)', background: 'linear-gradient(135deg, rgba(50,150,250,0.15) 0%, rgba(50,150,250,0.05) 100%)' }}>
+          資料備份與跨裝置轉移
+        </div>
+        <div className="panel-body" style={{ padding: '0.75rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          
+          {/* Backup Section */}
+          <div style={{ flex: 1, minWidth: '280px', background: 'var(--cell-bg)', padding: '0.75rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.4rem' }}>上傳備份至雲端</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.75rem' }}>
+              將目前所有資料暫存至雲端，系統會產生一組 6 位數代碼，憑此代碼可在其他裝置匯入。
+            </div>
+            {backupCode ? (
+              <div style={{ background: 'rgba(74, 222, 128, 0.1)', border: '1px solid #4ade80', padding: '0.5rem', borderRadius: '4px', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.75rem', color: '#4ade80' }}>備份成功！您的專屬代碼為：</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#4ade80', letterSpacing: '4px', margin: '0.2rem 0' }}>{backupCode}</div>
+                <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>(請記下此代碼，並在另一台裝置輸入)</div>
+              </div>
+            ) : (
+              <button 
+                onClick={handleBackup} 
+                disabled={isBackingUp}
+                style={{ width: '100%', padding: '0.6rem', background: 'rgba(50,150,250,0.2)', border: '1px solid #60a5fa', color: '#60a5fa', borderRadius: '4px', cursor: isBackingUp ? 'not-allowed' : 'pointer', fontWeight: 700, transition: 'all 0.2s' }}
+              >
+                {isBackingUp ? '備份中...' : '產生備份代碼'}
+              </button>
+            )}
+          </div>
+
+          {/* Restore Section */}
+          <div style={{ flex: 1, minWidth: '280px', background: 'var(--cell-bg)', padding: '0.75rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.4rem' }}>使用代碼匯入資料</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.75rem' }}>
+              請輸入之前產生的 6 位數代碼，即可將雲端資料下載並覆蓋至目前裝置。
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input 
+                type="text" 
+                maxLength={6}
+                placeholder="輸入 6 位數代碼" 
+                value={restoreCodeInput}
+                onChange={e => setRestoreCodeInput(e.target.value.replace(/\D/g, ''))}
+                style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text)', padding: '0.5rem', borderRadius: '4px', textAlign: 'center', fontSize: '1.2rem', letterSpacing: '2px', outline: 'none' }}
+              />
+              <button 
+                onClick={handleRestore}
+                disabled={isRestoring || restoreCodeInput.length !== 6}
+                style={{ padding: '0 1rem', background: 'rgba(210,175,55,0.2)', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: '4px', cursor: restoreCodeInput.length === 6 && !isRestoring ? 'pointer' : 'not-allowed', fontWeight: 700, transition: 'all 0.2s' }}
+              >
+                {isRestoring ? '載入中...' : '載入資料'}
+              </button>
+            </div>
+            {restoreMessage && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: restoreMessage.includes('成功') ? '#4ade80' : '#f87171', textAlign: 'center' }}>
+                {restoreMessage}
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
 
