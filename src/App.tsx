@@ -19,6 +19,14 @@ const fmtPct = (v: number | null) => {
   return (v > 0 ? '+' : '') + (v * 100).toFixed(2) + '%';
 };
 
+const getDynamicStyle = (val: string | number | null | undefined, baseRem: number, threshold: number): React.CSSProperties => {
+  const str = String(val || '');
+  const len = str.length;
+  if (len <= threshold) return { fontSize: `${baseRem}rem`, whiteSpace: 'nowrap' };
+  const newSize = Math.max(0.4, baseRem * (threshold / len));
+  return { fontSize: `${newSize}rem`, whiteSpace: 'nowrap', letterSpacing: '-0.02em' };
+};
+
 const MONTH_LABELS = ['1月\n1/1~1/31','2月\n2/1~2/28','3月\n3/1~3/31','4月\n4/1~4/30',
   '5月\n5/1~5/31','6月\n6/1~6/30','7月\n7/1~7/31','8月\n8/1~8/31',
   '9月\n9/1~9/30','10月\n10/1~10/31','11月\n11/1~11/30','12月\n12/1~12/31'];
@@ -176,7 +184,9 @@ export default function App() {
         ].map((s, i) => (
           <div className="stat-box" key={i}>
             <div className="stat-title">{s.title}</div>
-            <div className={`stat-value ${s.cls}`}>{s.val}</div>
+            <div className={`stat-value ${s.cls}`} style={getDynamicStyle(s.val, 1.05, 10)}>
+              {s.val}
+            </div>
             <img className="stat-icon" src={s.icon} alt={s.title} />
           </div>
         ))}
@@ -207,39 +217,42 @@ export default function App() {
                       {i === 0 ? (
                         <input className="table-input" type="text" placeholder="0"
                           value={initialAssets === 0 ? '' : String(initialAssets)}
-                          onChange={e => setInitialAssets(Number(e.target.value.replace(/,/g,'')))} />
+                          onChange={e => setInitialAssets(Number(e.target.value.replace(/,/g,'')))}
+                          style={getDynamicStyle(initialAssets === 0 ? '' : String(initialAssets), 0.75, 10)} />
                       ) : (
-                        (i > 0 && calc.rows[i-1].end === null) ? '' : fmt(r.begin)
+                        (i > 0 && calc.rows[i-1].end === null) ? '' : <span style={getDynamicStyle(fmt(r.begin), 0.75, 10)}>{fmt(r.begin)}</span>
                       )}
                     </td>
                     <td>
                       <input className="table-input" type="text" placeholder="-"
                         value={r.inv===null?'':String(r.inv)}
-                        onChange={e=>setField(i,'investment',e.target.value)} />
+                        onChange={e=>setField(i,'investment',e.target.value)}
+                        style={getDynamicStyle(r.inv===null?'':String(r.inv), 0.75, 10)} />
                     </td>
                     <td>
                       <input className="table-input" type="text" placeholder="-"
                         value={r.end===null?'':String(r.end)}
-                        onChange={e=>setField(i,'endingAssets',e.target.value)} />
+                        onChange={e=>setField(i,'endingAssets',e.target.value)}
+                        style={getDynamicStyle(r.end===null?'':String(r.end), 0.75, 10)} />
                     </td>
                     <td className={r.profit!==null?(r.profit>=0?'text-positive':'text-negative'):''}>
-                      {fmtSigned(r.profit)}
+                      <span style={getDynamicStyle(fmtSigned(r.profit), 0.75, 10)}>{fmtSigned(r.profit)}</span>
                     </td>
                     <td className={r.rate!==null?(r.rate>=0?'text-positive':'text-negative'):''}>
-                      {fmtPct(r.rate)}
+                      <span style={getDynamicStyle(fmtPct(r.rate), 0.75, 10)}>{fmtPct(r.rate)}</span>
                     </td>
                   </tr>
                 ))}
                 <tr className="total-row">
                   <td>總 計 <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(1/1~12/31)</span></td>
-                  <td>{fmt(initialAssets)} <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(年初資產)</span></td>
-                  <td>{fmt(calc.totalInv)} <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(今年投入)</span></td>
-                  <td>{fmt(calc.lastEnd)} <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(期末資產)</span></td>
+                  <td><div style={getDynamicStyle(fmt(initialAssets), 0.78, 10)}>{fmt(initialAssets)}</div> <div style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(年初資產)</div></td>
+                  <td><div style={getDynamicStyle(fmt(calc.totalInv), 0.78, 10)}>{fmt(calc.totalInv)}</div> <div style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(今年投入)</div></td>
+                  <td><div style={getDynamicStyle(fmt(calc.lastEnd), 0.78, 10)}>{fmt(calc.lastEnd)}</div> <div style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(期末資產)</div></td>
                   <td className={calc.totalProfit>=0?'text-positive':'text-negative'}>
-                    {fmtSigned(calc.totalProfit)} <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(真實投資獲利)</span>
+                    <div style={getDynamicStyle(fmtSigned(calc.totalProfit), 0.78, 10)}>{fmtSigned(calc.totalProfit)}</div> <div style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(真實投資獲利)</div>
                   </td>
                   <td className={calc.realReturn>=0?'text-positive':'text-negative'}>
-                    {fmtPct(calc.realReturn)} <span style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(真實報酬率)</span>
+                    <div style={getDynamicStyle(fmtPct(calc.realReturn), 0.78, 10)}>{fmtPct(calc.realReturn)}</div> <div style={{fontSize:'0.6rem',color:'var(--muted)',whiteSpace:'nowrap'}}>(真實報酬率)</div>
                   </td>
                 </tr>
               </tbody>
@@ -266,8 +279,10 @@ export default function App() {
                   <img className="highlight-icon-top" src={h.icon} alt={h.label} />
                   <div className="highlight-label">{h.label}</div>
                   <div className={`highlight-val ${h.vcls}`}>
-                    {h.val}
-                    {h.subVal && <div className="highlight-subval" style={{fontSize:'0.8rem'}}>{h.subVal}</div>}
+                    <span style={getDynamicStyle(h.val, 0.88, 11)}>
+                      {h.val}
+                    </span>
+                    {h.subVal && <div className="highlight-subval" style={getDynamicStyle(h.subVal, 0.72, 14)}>{h.subVal}</div>}
                   </div>
                 </div>
               ))}
@@ -278,14 +293,14 @@ export default function App() {
             <div className="return-box">
               <div className="return-title">真實報酬率</div>
               <div className="return-sub">(年初至今)</div>
-              <div className={`return-val ${calc.realReturn>=0?'text-positive':'text-negative'}`}>
+              <div className={`return-val ${calc.realReturn>=0?'text-positive':'text-negative'}`} style={getDynamicStyle(fmtPct(calc.realReturn), 2, 7)}>
                 {fmtPct(calc.realReturn)}
               </div>
             </div>
             <div className="return-box">
               <div className="return-title">淨報酬率</div>
               <div className="return-sub">(年初至今)</div>
-              <div className={`return-val ${calc.netReturn>=0?'text-positive':'text-negative'}`}>
+              <div className={`return-val ${calc.netReturn>=0?'text-positive':'text-negative'}`} style={getDynamicStyle(fmtPct(calc.netReturn), 2, 7)}>
                 {fmtPct(calc.netReturn)}
               </div>
             </div>
