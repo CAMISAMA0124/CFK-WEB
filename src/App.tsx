@@ -106,8 +106,8 @@ export default function App() {
     try {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       const payload = { year, initialAssets, loans, annualInterest, monthlyInputs };
-      const res = await fetch(`https://kvdb.io/64YQm3RDnTFyWuLV7hJreQ/${code}`, {
-        method: 'PUT',
+      const res = await fetch(`https://ntfy.sh/cfk_backup_${code}`, {
+        method: 'POST',
         body: JSON.stringify(payload)
       });
       if (res.ok) setBackupCode(code);
@@ -123,11 +123,19 @@ export default function App() {
     setIsRestoring(true);
     setRestoreMessage('');
     try {
-      const res = await fetch(`https://kvdb.io/64YQm3RDnTFyWuLV7hJreQ/${restoreCodeInput}`);
-      if (res.status === 404) {
-        setRestoreMessage('❌ 找不到此代碼的資料，或代碼已過期。');
-      } else if (res.ok) {
-        const data = await res.json();
+      const res = await fetch(`https://ntfy.sh/cfk_backup_${restoreCodeInput}/json?poll=1`);
+      if (res.ok) {
+        const text = await res.text();
+        const lines = text.trim().split('\n').filter(Boolean);
+        if (lines.length === 0) {
+          setRestoreMessage('❌ 找不到此代碼的資料，或代碼已過期。');
+          setIsRestoring(false);
+          return;
+        }
+        
+        const lastMsg = JSON.parse(lines[lines.length - 1]);
+        const data = JSON.parse(lastMsg.message);
+        
         if (data && data.year) {
           setYear(data.year);
           setInitialAssets(data.initialAssets ?? 0);
@@ -143,7 +151,7 @@ export default function App() {
         setRestoreMessage('❌ 雲端伺服器錯誤，請稍後再試。');
       }
     } catch (err) {
-      setRestoreMessage('❌ 網路發生錯誤。');
+      setRestoreMessage('❌ 找不到此代碼的資料，或網路發生錯誤。');
     }
     setIsRestoring(false);
   };
